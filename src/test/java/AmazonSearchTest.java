@@ -8,6 +8,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.function.BooleanSupplier;
 
 public class AmazonSearchTest {
 
@@ -132,5 +133,33 @@ public class AmazonSearchTest {
         //cheeky way of checking if the quantity is right
         Assertions.assertTrue(resultSet.contains("Qty:1"));
 
+    }
+
+    @Test
+    public void verifyWrongPasswordWindow() {
+        driver.get("https://www.amazon.com/ap/signin?openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fref%3Dnav_signin&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.assoc_handle=usflex&openid.mode=checkid_setup&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&");
+
+        WebElement emailForm = driver.findElement(By.id("ap_email"));
+        emailForm.sendKeys("josersilveti27@gmail.com");
+
+        WebElement continueButton = driver.findElement(By.id("continue"));
+
+        continueButton.click();
+
+        WebElement passwordForm = new WebDriverWait(driver, Duration.ofSeconds(10))
+                .until(ExpectedConditions.elementToBeClickable(By.id("ap_password")));
+
+        passwordForm.sendKeys("badPassword");
+
+        WebElement submitButton = driver.findElement(By.id("signInSubmit"));
+
+        submitButton.click();
+
+        WebElement errorMessageBox = new WebDriverWait(driver, Duration.ofSeconds(5))
+                .until(ExpectedConditions.presenceOfElementLocated(By.id("auth-error-message-box")));
+
+        errorMessageBox.isDisplayed();
+
+        Assertions.assertTrue(errorMessageBox.isDisplayed());
     }
 }
