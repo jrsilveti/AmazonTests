@@ -3,9 +3,11 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.time.Duration;
+import java.util.*;
 
 public class AmazonSearchTest {
 
@@ -41,7 +43,8 @@ public class AmazonSearchTest {
         for(int i =0; i < sourceString.length(); i++) {
             currentCharacter = sourceString.charAt(i);
             //spaces, commas, and periods end words.
-            if(currentCharacter == ' ' || currentCharacter == ',' || currentCharacter == '.'){
+            if(currentCharacter == ' ' || currentCharacter == ',' || currentCharacter == '.'
+                    || currentCharacter == '\n'){
                 if(currentWord.length() > 0) {
                     parsedStrings.add(currentWord.toString());
                     currentWord.delete(0, currentWord.length());
@@ -94,5 +97,40 @@ public class AmazonSearchTest {
 
 
         Assertions.assertTrue(searchSet.contains("PlayStation"));
+    }
+
+    @Test
+    public void verifyAddToCard() {
+        driver.get("https://www.amazon.com/LEGO-Star-Wars-Millennium-Minifigures/dp/B07QQ396NH/ref=sr_1_3?crid=1A163B33LNAZW&keywords=star%2Bwars%2Blego&qid=1654347481&sprefix=star%2Bwars%2Blego%2Caps%2C62&sr=8-3&th=1/");
+
+        WebElement addToCartButton = driver.findElement(By.id("add-to-cart-button"));
+
+        addToCartButton.click();
+
+        WebElement proceedCheckout = new WebDriverWait(driver, Duration.ofSeconds(10))
+                .until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"attach-sidesheet-checkout-button\"]/span/input")));
+
+        proceedCheckout.click();
+
+        driver.get("https://www.amazon.com/gp/cart/view.html?ref_=nav_cart");
+
+        WebElement activeCart = driver.findElement(By.id("sc-active-cart"));
+
+        Set<String> resultSet = parseWords(activeCart.getText());
+
+        for (String s : resultSet) {
+            System.out.println("current word: " + s);
+        }
+
+        Assertions.assertTrue(resultSet.contains("LEGO"));
+        Assertions.assertTrue(resultSet.contains("Star"));
+        Assertions.assertTrue(resultSet.contains("Wars:"));
+        Assertions.assertTrue(resultSet.contains("Falcon"));
+        Assertions.assertTrue(resultSet.contains("Millennium"));
+        Assertions.assertTrue(resultSet.contains("75257"));
+
+        //cheeky way of checking if the quantity is right
+        Assertions.assertTrue(resultSet.contains("Qty:1"));
+
     }
 }
